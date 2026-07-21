@@ -88,6 +88,7 @@ export function KeyformerExperience() {
   const [data, setData] = useState<StoryData | null>(null);
   const [evaluation, setEvaluation] = useState<ModelEvaluation | null>(null);
   const [selectedId, setSelectedId] = useState("001");
+  const [introComplete, setIntroComplete] = useState(false);
   const { scrollYProgress } = useScroll();
   useEffect(() => {
     fetch("/data/story.json").then((response) => response.json()).then(setData);
@@ -99,10 +100,10 @@ export function KeyformerExperience() {
     return () => window.clearTimeout(timer);
   }, [data]);
   const user = data?.users.find((item) => item.id === selectedId) ?? data?.users[0];
-  if (!data || !user || !evaluation) return <main className="loading">
+  if (!data || !user || !evaluation || !introComplete) return <main className="loading">
     <div className="loading-mark"><TypeTraceMark size={44}/></div>
     <div className="loading-wordmark" aria-label="TypeTrace">
-      <span aria-hidden="true">T</span><span aria-hidden="true">y</span><span aria-hidden="true">p</span><span aria-hidden="true">e</span><span aria-hidden="true">T</span><span aria-hidden="true">r</span><span aria-hidden="true">a</span><span aria-hidden="true">c</span><span aria-hidden="true">e</span><i aria-hidden="true"/>
+      <span aria-hidden="true">T</span><span aria-hidden="true">y</span><span aria-hidden="true">p</span><span aria-hidden="true">e</span><span aria-hidden="true">T</span><span aria-hidden="true">r</span><span aria-hidden="true">a</span><span aria-hidden="true">c</span><span aria-hidden="true" onAnimationEnd={() => setIntroComplete(true)}>e</span><i aria-hidden="true"/>
     </div>
   </main>;
 
