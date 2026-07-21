@@ -9,6 +9,7 @@ import styles from "./live-identification-lab.module.css";
 
 type Prediction = Awaited<ReturnType<typeof inferKeyformer>>;
 const number = (value: number, digits = 0) => Number.isFinite(value) ? value.toFixed(digits) : "—";
+const conservativeScore = (value: number) => Math.max(0, Math.min(1, value * 0.8));
 
 export function LiveIdentificationLab({ prompt }: { prompt: string }) {
   const [events, setEvents] = useState<CapturedKeyEvent[]>([]);
@@ -93,7 +94,7 @@ export function LiveIdentificationLab({ prompt }: { prompt: string }) {
         <span><ScanSearch size={14}/> Your typing stays in this browser</span>
       </footer>
 
-      {prediction && <div className={styles.comparison}><span className="mini-label">Closest profile in this demonstration</span><div className={styles.comparisonHead}><h3>User {prediction.predicted}</h3><b>{(prediction.confidence*100).toFixed(2)}% comparison score</b></div><div className={styles.ranking}>{prediction.top5.map((candidate,index) => <div key={candidate.id} className={styles.candidate}><span>0{index+1}</span><span>User {candidate.id}</span><i className={styles.bar}><i style={{ width: `${candidate.probability*100}%` }}/></i><span>{(candidate.probability*100).toFixed(2)}%</span></div>)}</div><p className={styles.caveat}><strong>This is not proof of identity.</strong> The model must choose one of the 148 enrolled users because it has no “unknown person” option. Treat this as a comparison demo only.</p></div>}
+      {prediction && <div className={styles.comparison}><span className="mini-label">Closest profile in this demonstration</span><div className={styles.comparisonHead}><h3>User {prediction.predicted}</h3><b>{(conservativeScore(prediction.confidence)*100).toFixed(2)}% conservative score</b></div><div className={styles.ranking}>{prediction.top5.map((candidate,index) => <div key={candidate.id} className={styles.candidate}><span>0{index+1}</span><span>User {candidate.id}</span><i className={styles.bar}><i style={{ width: `${conservativeScore(candidate.probability)*100}%` }}/></i><span>{(conservativeScore(candidate.probability)*100).toFixed(2)}%</span></div>)}</div><p className={styles.caveat}><strong>This is not proof of identity.</strong> The model must choose one of the 148 enrolled users because it has no “unknown person” option. Treat this as a comparison demo only. Displayed live scores are intentionally reduced to 80% of the raw model output; evaluation metrics are unchanged.</p></div>}
       {status === "error" && <div className={styles.error}>The browser model could not initialize. Reload and try again.</div>}
     </div>
   );

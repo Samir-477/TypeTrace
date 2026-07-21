@@ -4,9 +4,9 @@
 .statement { margin:22px 22px 0; padding:20px 22px; border:1px solid #ffffff0f; border-radius:15px; background:#070a09; }
 .statementHead { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; color:#65716e; font:500 8px var(--font-mono); letter-spacing:.12em; text-transform:uppercase; }
 .statementHead b { color:#a8b2af; font-weight:500; }
-.text { min-height:72px; color:#34403d; font:500 clamp(18px,2vw,25px)/1.55 var(--font-mono); letter-spacing:.01em; }
-.text span { position:relative; transition:color .15s ease,background .15s ease; }
-.text .done { color:#8a9692; }.text .active { color:#071006; background:var(--lime); border-radius:3px; box-shadow:0 0 18px #b6ff5c66; }
+.text { min-height:72px; color:#34403d; font:500 clamp(18px,2vw,25px)/1.55 var(--font-mono); letter-spacing:.01em; white-space:pre-wrap; overflow-wrap:normal; }
+.text span { position:relative; transition:color .15s ease; }
+.currentChar:before,.endCursor:before{position:absolute;left:-1px;top:.04em;width:4px;height:1.08em;content:"";border-radius:3px;background:var(--lime);box-shadow:0 0 18px #b6ff5c66;animation:replayCursor 1s steps(1) infinite}.endCursor{display:inline-block;position:relative;width:0}.endCursor:before{top:-.88em}@keyframes replayCursor{50%{opacity:.28}}
 .eventLine { display:flex; align-items:center; gap:8px; margin:14px 22px 0; min-height:34px; }
 .eventBadge { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid #b6ff5c2d; border-radius:7px; color:var(--lime); background:#b6ff5c09; font:500 9px var(--font-mono); }
 .eventBadge.up { color:#9d8fff; border-color:#8d7cff35; background:#8d7cff0a; }

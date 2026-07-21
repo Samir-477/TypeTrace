@@ -31,6 +31,7 @@ export function SignalRhythmDemo({ user }: { user: StoryUser }) {
   const [speed, setSpeed] = useState(1);
   const event = events[cursor % events.length];
   const typed = reconstructedText(events, cursor % events.length);
+  const passage = user.replay.sourcePassage.toLowerCase();
   const activeKey = visualKey(event);
   const timelineStart = Math.floor((cursor % events.length) / 24) * 24;
   const timeline = events.slice(timelineStart, timelineStart + 24);
@@ -66,16 +67,21 @@ export function SignalRhythmDemo({ user }: { user: StoryUser }) {
 
       <div className={styles.statement}>
         <div className={styles.statementHead}><span>Reference passage</span><b>same words · User {user.id}&apos;s timing</b></div>
-        <div style={{ position: "relative" }}>
-          <div className={styles.text} style={{ color: "#35403d" }}>{user.replay.sourcePassage.toLowerCase()}</div>
-          <div className={styles.text} style={{ position: "absolute", inset: 0, color: "transparent", pointerEvents: "none" }} aria-live="polite">
-            {typed.split("").map((letter, index) => {
-              const expected = user.replay.sourcePassage.toLowerCase()[index];
-              const matches = letter.toLowerCase() === expected;
-              return <span key={`${index}-${letter}`} style={{ color: matches ? "#a7b1ad" : "#ffb45c", textShadow: matches ? "none" : "0 0 12px #ffb45c55" }}>{letter}</span>;
-            })}
-            <span className={styles.active}>&nbsp;</span>
-          </div>
+        <div className={styles.text} aria-live="polite">
+          {passage.split("").map((expected, index) => {
+            const letter = typed[index];
+            const revealed = letter !== undefined;
+            const matches = revealed && letter.toLowerCase() === expected;
+            return <span
+              className={index === typed.length ? styles.currentChar : ""}
+              key={`${index}-${expected}`}
+              style={{
+                color: revealed ? (matches ? "#a7b1ad" : "#ffb45c") : "#35403d",
+                textShadow: revealed && !matches ? "0 0 12px #ffb45c55" : "none",
+              }}
+            >{revealed ? letter : expected}</span>;
+          })}
+          {typed.length >= passage.length && <span className={styles.endCursor}/>} 
         </div>
       </div>
 
