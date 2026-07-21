@@ -13,3 +13,6 @@
 
 /* action button readability */
 .actions .primary-button,.actions .ghost-button{min-height:54px;padding:0 24px;font-size:14px;line-height:1.2}
+
+/* monkeytype text flow */
+.typingLine{position:relative;margin:0;color:#313a37;font:400 clamp(23px,2.4vw,38px)/1.55 var(--font-mono);letter-spacing:-.025em;white-space:pre-wrap;overflow-wrap:anywhere}.typingLine .pending{color:#313a37}.typingLine .match{color:#aab4b0}.typingLine .mismatch{color:var(--amber);text-shadow:0 0 14px #ffb45c65}.typingLine .cursor{width:4px;margin:0 1px;vertical-align:-.12em}

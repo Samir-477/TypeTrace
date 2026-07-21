@@ -8,6 +8,17 @@ import { summarizeLiveSignal } from "@/lib/live-signal-summary";
 import styles from "./live-identification-lab.module.css";
 
 type Prediction = Awaited<ReturnType<typeof inferKeyformer>>;
+
+function alignTypedText(input: string, reference: string) {
+  let referenceIndex = 0;
+  const entered = input.split("").map((character, index) => {
+    const expected = reference[referenceIndex];
+    const correct = expected !== undefined && character.toLowerCase() === expected.toLowerCase();
+    if (correct) referenceIndex += 1;
+    return { character, correct, index };
+  });
+  return { entered, remaining: reference.slice(referenceIndex) };
+}
 const number = (value: number, digits = 0) => Number.isFinite(value) ? value.toFixed(digits) : "—";
 const conservativeScore = (value: number) => Math.max(0, Math.min(1, value * 0.8));
 
@@ -21,6 +32,7 @@ export function LiveIdentificationLab({ prompt }: { prompt: string }) {
   const passage = prompt.trim().slice(0, 260);
   const extracted = useMemo(() => extractLiveWindow(events), [events]);
   const signal = useMemo(() => summarizeLiveSignal(events), [events]);
+  const alignedText = useMemo(() => alignTypedText(text, passage), [text, passage]);
 
   const capture = (type: "down" | "up", event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (type === "down" && event.repeat) return;
@@ -54,13 +66,10 @@ export function LiveIdentificationLab({ prompt }: { prompt: string }) {
       <section className={`${styles.transcript} ${focused ? styles.focused : ""}`} onClick={() => input.current?.focus()}>
         <div className={styles.transcriptHead}><span>Type this passage</span><b>the words are fixed; the timing is yours</b></div>
         <div className={styles.textLayer}>
-          <p className={styles.reference}>{passage}</p>
-          <p className={styles.typed} aria-live="polite">
-            {text.split("").map((letter, index) => {
-              const matches = letter.toLowerCase() === passage[index]?.toLowerCase();
-              return <span className={matches ? styles.match : styles.mismatch} key={`${index}-${letter}`}>{letter}</span>;
-            })}
+          <p className={styles.typingLine} aria-live="polite">
+            {alignedText.entered.map((item) => <span className={item.correct ? styles.match : styles.mismatch} key={`${item.index}-${item.character}`}>{item.character}</span>)}
             <i className={styles.cursor}/>
+            <span className={styles.pending}>{alignedText.remaining}</span>
           </p>
           <textarea ref={input} value={text} onChange={(event) => setText(event.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} onKeyDown={(event) => capture("down", event)} onKeyUp={(event) => capture("up", event)} spellCheck={false} aria-label="Type the displayed UB passage" />
         </div>
