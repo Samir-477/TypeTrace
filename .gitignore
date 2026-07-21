@@ -1,0 +1,45 @@
+# Dependencies
+/node_modules/
+
+# Next.js build output
+/.next/
+/out/
+/dist/
+
+# Generated ONNX Runtime browser assets (restored by npm postinstall)
+/public/ort/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Vercel project metadata
+/.vercel/
+
+# Test and tooling output
+/coverage/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Raw ML checkpoints are not deployment assets
+*.pt
+*.pth
+*.ckpt
+
+# Python cache produced by model utilities
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
