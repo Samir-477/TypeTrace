@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDown, Braces, ChevronRight,
+  ArrowDown, ChevronRight,
   Dice5, Fingerprint,
 } from "lucide-react";
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll } from "motion/react";
@@ -15,6 +15,7 @@ import { PreprocessingVisual } from "@/components/preprocessing-visual";
 import { TcnVisual } from "@/components/tcn-visual";
 import { TransformerVisual } from "@/components/transformer-visual";
 import { IdentitySpaceVisual } from "@/components/identity-space-visual";
+import { TypeTraceMark } from "@/components/type-trace-mark";
 
 const stages = ["Signal", "Features", "Window", "TCN", "Transformer", "Identity", "Result"];
 
@@ -98,17 +99,12 @@ export function KeyformerExperience() {
     return () => window.clearTimeout(timer);
   }, [data]);
   const user = data?.users.find((item) => item.id === selectedId) ?? data?.users[0];
-  if (!data || !user || !evaluation) return <main className="loading">
-    <div className="loading-mark"><Fingerprint size={28}/></div>
-    <span>Preparing the TypeTrace story</span>
-    <p>Loading recorded users and model results</p>
-    <div className="loading-bar"><i/></div>
-  </main>;
+  if (!data || !user || !evaluation) return <main className="loading"><div className="loading-mark"><TypeTraceMark size={44}/></div></main>;
 
   return (
     <main>
       <motion.div className="scroll-progress" initial={false} style={{ scaleX: scrollYProgress }} />
-      <nav><a href="#top" className="brand"><span><Braces size={16}/></span>TYPETRACE</a><div className="stage-nav">{stages.map((stage, index) => <a key={stage} href={`#stage-${index + 1}`}><i>{String(index + 1).padStart(2,"0")}</i>{stage}</a>)}</div><div className="nav-user"><Fingerprint size={14}/> {user.id}</div></nav>
+      <nav><a href="#top" className="brand"><span><TypeTraceMark size={19}/></span>TYPETRACE</a><div className="stage-nav">{stages.map((stage, index) => <a key={stage} href={`#stage-${index + 1}`}><i>{String(index + 1).padStart(2,"0")}</i>{stage}</a>)}</div><div className="nav-user"><Fingerprint size={14}/> {user.id}</div></nav>
 
       <section className="hero" id="top">
         <div className="hero-grid"/><div className="hero-glow"/><div className="floating-token t1">H <b>{user.mean.H.toFixed(0)}</b></div><div className="floating-token t2">UD <b>{user.mean.UD.toFixed(0)}</b></div><div className="floating-token t3">D4</div>
@@ -125,7 +121,7 @@ export function KeyformerExperience() {
       <section className="results-section" id="stage-7"><SectionHeading index="07" eyebrow="Final prediction" title="Many windows make one decision." copy="A short window can be uncertain, so the model combines the predictions from several unseen windows. Repeated agreement produces the final user result shown below."/><Reveal><ModelResults user={user} evaluation={evaluation}/></Reveal></section>
       <section className="lab-section"><SectionHeading index="08" eyebrow="Try it yourself" title="See your own timing measurements." copy="Type the displayed passage normally. The page measures your holds, gaps, overlaps, pauses and corrections in this browser. If your sample is varied enough, you can compare it with the enrolled profiles as a demonstration—not as proof of identity."/><Reveal><LiveIdentificationLab key={user.id} prompt={user.replay.sourcePassage}/></Reveal></section>
 
-      <footer><div className="brand"><span><Braces size={16}/></span>TYPETRACE</div><p>TCN × Transformer × ArcFace</p><span>University at Buffalo keystroke dynamics</span></footer>
+      <footer><div className="brand"><span><TypeTraceMark size={19}/></span>TYPETRACE</div><p>TCN × Transformer × ArcFace</p><span>University at Buffalo keystroke dynamics</span></footer>
     </main>
   );
 }
