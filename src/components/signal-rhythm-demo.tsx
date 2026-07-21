@@ -23,15 +23,29 @@ function reconstructedText(events: ReplayEvent[], through: number) {
   return text.join("");
 }
 
+function alignReplayEvents(events: ReplayEvent[], passage: string) {
+  const probe = passage.toLowerCase().slice(0, 12);
+  for (let start = 0; start < events.length; start += 1) {
+    let candidate = "";
+    for (let index = start; index < events.length && candidate.length < probe.length; index += 1) {
+      const char = events[index].char;
+      if (char === "\b") candidate = candidate.slice(0, -1);
+      else candidate += char.toLowerCase();
+    }
+    if (candidate.startsWith(probe)) return [...events.slice(start), ...events.slice(0, start)];
+  }
+  return events;
+}
+
 export function SignalRhythmDemo({ user }: { user: StoryUser }) {
-  const events = user.replay.events;
+  const passage = user.replay.sourcePassage.toLowerCase();
+  const events = useMemo(() => alignReplayEvents(user.replay.events, passage), [user.replay.events, passage]);
   const [cursor, setCursor] = useState(0);
   const [phase, setPhase] = useState<"down" | "up">("down");
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
   const event = events[cursor % events.length];
   const typed = reconstructedText(events, cursor % events.length);
-  const passage = user.replay.sourcePassage.toLowerCase();
   const activeKey = visualKey(event);
   const timelineStart = Math.floor((cursor % events.length) / 24) * 24;
   const timeline = events.slice(timelineStart, timelineStart + 24);

@@ -5,7 +5,8 @@ import {
   ArrowDown, ChevronRight,
   Dice5, Fingerprint,
 } from "lucide-react";
-import { AnimatePresence, motion, useInView, useReducedMotion, useScroll } from "motion/react";
+import { motion, useInView, useReducedMotion, useScroll } from "motion/react";
+import { createPortal } from "react-dom";
 import type { ModelEvaluation, StoryData, StoryUser } from "@/lib/story-types";
 import { SignalRhythmDemo } from "@/components/signal-rhythm-demo";
 import { ModelResults } from "@/components/model-results";
@@ -49,6 +50,17 @@ function UserPicker({ users, selected, onSelect }: { users: StoryUser[]; selecte
   const shown = users.filter((user) => user.id.includes(query.replace(/\D/g, ""))).slice(0, 24);
   const randomize = () => onSelect(users[Math.floor(Math.random() * users.length)]);
 
+  useEffect(() => {
+    document.body.style.removeProperty("overflow");
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
+
   return (
     <>
       <div className="picker-actions">
@@ -57,10 +69,9 @@ function UserPicker({ users, selected, onSelect }: { users: StoryUser[]; selecte
         </button>
         <button className="ghost-button" onClick={randomize}><Dice5 size={17} /> Random</button>
       </div>
-      <AnimatePresence>
-        {open && (
-          <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
-            <motion.div className="user-modal" initial={{ y: 40, opacity: 0, scale: .98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0 }} onClick={(event) => event.stopPropagation()}>
+      {open && createPortal(
+          <div className="modal-backdrop" onClick={() => setOpen(false)}>
+            <div className="user-modal" onClick={(event) => event.stopPropagation()}>
               <div className="modal-head">
                 <div><h3>Choose a typing profile</h3></div>
                 <button className="icon-button" onClick={() => setOpen(false)}>×</button>
@@ -75,10 +86,10 @@ function UserPicker({ users, selected, onSelect }: { users: StoryUser[]; selecte
                   </button>
                 ))}
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>,
+          document.body
         )}
-      </AnimatePresence>
     </>
   );
 }
@@ -112,9 +123,8 @@ export function KeyformerExperience() {
       <nav><a href="#top" className="brand"><span><Fingerprint size={19}/></span>TYPETRACE</a><div className="stage-nav">{stages.map((stage, index) => <a key={stage} href={`#stage-${index + 1}`}><i>{String(index + 1).padStart(2,"0")}</i>{stage}</a>)}</div><div className="nav-user"><Fingerprint size={14}/> {user.id}</div></nav>
 
       <section className="hero" id="top">
-        <div className="hero-grid"/><div className="hero-glow"/><div className="floating-token t1">H <b>{user.mean.H.toFixed(0)}</b></div><div className="floating-token t2">UD <b>{user.mean.UD.toFixed(0)}</b></div><div className="floating-token t3">D4</div>
+        <div className="hero-grid"/><div className="hero-glow"/><div className="floating-token t1">H <b>{user.mean.H.toFixed(0)}</b></div><div className="floating-token t2">UD <b>{user.mean.UD.toFixed(0)}</b></div><div className="floating-token t3">D4</div><div className="floating-token fact-token f1"><b>{data.dataset.users}</b><span>typists</span></div><div className="floating-token fact-token f2"><b>{data.dataset.sessions}</b><span>sessions</span></div><div className="floating-token fact-token f3"><b>{number(data.dataset.processedEvents)}</b><span>events</span></div><div className="floating-token fact-token f4"><b>{data.dataset.features}</b><span>features</span></div>
         <Reveal className="hero-content"><div className="eyebrow"><span>TypeTrace v4</span> Keystroke identity, explained</div><h1>Your identity is<br/><em>between</em> the keys.</h1><p>See how the time between key presses becomes a typing pattern, then a predicted user.</p><UserPicker users={data.users} selected={user} onSelect={(next) => setSelectedId(next.id)}/><a className="journey-link" href="#stage-1"><span><ArrowDown/></span>Enter the signal</a></Reveal>
-        <div className="dataset-ribbon"><div><b>{data.dataset.users}</b><span>typists</span></div><div><b>{data.dataset.sessions}</b><span>sessions</span></div><div><b>{number(data.dataset.processedEvents)}</b><span>events</span></div><div><b>{data.dataset.features}</b><span>features</span></div></div>
       </section>
 
       <section className="story-section" id="stage-1"><SectionHeading index="01" eyebrow="Recorded keystrokes" title="Typing creates a timing pattern." copy={`Every press and release has a timestamp. This replay uses User ${user.id}'s recorded timing to show how long keys are held and how quickly the next key begins. These raw timings become the measurements in the next stage.`}/><Reveal className="visual-wrap"><SignalRhythmDemo key={user.id} user={user}/></Reveal></section>
@@ -126,7 +136,7 @@ export function KeyformerExperience() {
       <section className="results-section" id="stage-7"><SectionHeading index="07" eyebrow="Final prediction" title="Many windows make one decision." copy="A short window can be uncertain, so the model combines the predictions from several unseen windows. Repeated agreement produces the final user result shown below."/><Reveal><ModelResults user={user} evaluation={evaluation}/></Reveal></section>
       <section className="lab-section"><SectionHeading index="08" eyebrow="Try it yourself" title="See your own timing measurements." copy="Type the displayed passage normally. The page measures your holds, gaps, overlaps, pauses and corrections in this browser. If your sample is varied enough, you can compare it with the enrolled profiles as a demonstration—not as proof of identity."/><Reveal><LiveIdentificationLab key={user.id} prompt={user.replay.sourcePassage}/></Reveal></section>
 
-      <footer><div className="brand"><span><Fingerprint size={19}/></span>TYPETRACE</div><p>TCN × Transformer × ArcFace</p><span>University at Buffalo keystroke dynamics</span></footer>
+      <footer><div className="brand"><span><Fingerprint size={19}/></span>TYPETRACE</div><p>TCN × Transformer × ArcFace</p><span>capstone was epic</span></footer>
     </main>
   );
 }
